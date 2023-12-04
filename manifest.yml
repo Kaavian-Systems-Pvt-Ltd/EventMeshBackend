@@ -1,0 +1,14 @@
+---
+applications:
+  - name: EventMeshBackEndHandler
+    random-route: true
+    path: ./target/Event_Mesh_BackEnd-0.0.1-SNAPSHOT.jar
+    memory: 1024M
+    buildpacks:
+      - https://github.com/cloudfoundry/java-buildpack.git#v4.63.1
+    env:
+      TARGET_RUNTIME: tomcat
+      JBP_CONFIG_OPEN_JDK_JRE: '{ jre: { version: 17.+ } }'
+      JAVA_OPTS: "-agentlib:jdwp=transport=dt_socket,address=8686,server=y,suspend=n"
+    services:
+      - my-xsuaa
