@@ -1,9 +1,6 @@
 package com.eventmesh.backend.event_mesh_backend.controller;
 
-import com.eventmesh.backend.event_mesh_backend.service.Fright_Vendor_Data_Service;
-import com.eventmesh.backend.event_mesh_backend.service.Get_Purchase_Order_Id_From_Event_Mesh;
-import com.eventmesh.backend.event_mesh_backend.service.Purchase_Order_Details_Service;
-import com.eventmesh.backend.event_mesh_backend.service.Supplier_Address_Service;
+import com.eventmesh.backend.event_mesh_backend.service.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.apache.coyote.Response;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +19,9 @@ public class Purchase_Order_Controller {
     @Value("${URL.GET.SUPPLIER.ADDRESS.DATA}")
     String update_Supplier_Address_Url;
 
+    @Value("${URL.POST.TO.CREATE.INBOUND.DELIVERY.DOCUMENT}")
+    String create_inbound_delivery_url;
+
     ResponseEntity<String> purchaseOrderId;
 
     @Autowired
@@ -35,6 +35,9 @@ public class Purchase_Order_Controller {
 
     @Autowired
     Fright_Vendor_Data_Service fright_vender_data_service;
+
+    @Autowired
+    Create_Inbound_Delivery_Service createInboundDeliveryService;
 
     @PostMapping("recieveData")
     public ResponseEntity<String> getPurchaseOrderIdFromEventMesh (@RequestBody String message) throws JsonProcessingException {
@@ -69,6 +72,13 @@ public class Purchase_Order_Controller {
                     String frightVendorData = fright_vender_data_service.getFrightVendorData(purchaseOrderData, supplierAddressData);
 
                     System.out.println(frightVendorData);
+
+                    if (!frightVendorData.isEmpty()){
+
+                        String InboundDelivery = createInboundDeliveryService.CreateInboundDocument();
+
+                        System.out.println(InboundDelivery);
+                    }
 
                     return ResponseEntity.ok(frightVendorData);
 

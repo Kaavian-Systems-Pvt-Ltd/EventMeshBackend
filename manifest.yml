@@ -1,6 +1,6 @@
 ---
 applications:
-  - name: EventMeshBackEndHandler
+  - name: EventMeshBackEndHandlerInbound
     random-route: true
     path: ./target/Event_Mesh_BackEnd-0.0.1-SNAPSHOT.jar
     memory: 1024M
