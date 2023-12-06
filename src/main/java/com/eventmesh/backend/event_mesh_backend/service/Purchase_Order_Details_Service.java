@@ -58,6 +58,7 @@ public class Purchase_Order_Details_Service {
 
                     String deliveryAddressCityName = result.get("DeliveryAddressCityName").getAsString();
 
+                    System.out.println(result);
                     return deliveryAddressCityName;
 
                 }else {

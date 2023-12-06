@@ -34,6 +34,8 @@ public class Fright_Vendor_Data_Service {
 
             String reqRes = res.body();
 
+            System.out.println(reqRes);
+
             return reqRes;
 
         }catch (Exception e){

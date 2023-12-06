@@ -17,7 +17,7 @@ import java.util.Base64;
 @Service
 public class Supplier_Address_Service {
 
-    @Value("${SAP.LOGIN.USERNAME}")
+    @Value("${SAP.LOGIN.USERNAME")
     String userName;
 
     @Value("${SAP.LOGIN.PASSWORD}")
