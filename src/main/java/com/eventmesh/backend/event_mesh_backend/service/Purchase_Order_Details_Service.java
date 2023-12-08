@@ -15,10 +15,10 @@ import java.util.Base64;
 @Service
 public class Purchase_Order_Details_Service {
 
-    @Value("${SAP.LOGIN.USERNAME}")
+    @Value("${SAP.SMART.LOGIN.USERNAME}")
     String userName;
 
-    @Value("${SAP.LOGIN.PASSWORD}")
+    @Value("${SAP.SMART.LOGIN.PASSWORD}")
     String password;
 
     public String getPurchaseOrderDetail(String updatePurchaseOrderUrlDynamically) {
@@ -35,9 +35,10 @@ public class Purchase_Order_Details_Service {
             HttpRequest req = HttpRequest.newBuilder()
                     .uri(new URI(updatePurchaseOrderUrlDynamically))
                     .header("Authorization", "Basic " + encodeCredentials)
-                    .header("Content-Type", "application/json")
                     .header("Accept", "application/json")
-                    .header("x-csrf-token", "Fetch")
+                    .header("sap-client", "400")
+                    .header("sap-usercontext", "sap-client%3D400")
+                    .header("Accept-Encoding", "application/json")
                     .GET()
                     .build();
 
@@ -59,6 +60,7 @@ public class Purchase_Order_Details_Service {
                     String deliveryAddressCityName = result.get("DeliveryAddressCityName").getAsString();
 
                     System.out.println(result);
+
                     return deliveryAddressCityName;
 
                 }else {

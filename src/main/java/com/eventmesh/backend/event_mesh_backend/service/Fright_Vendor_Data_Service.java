@@ -11,10 +11,13 @@ import java.net.http.HttpResponse;
 @Service
 public class Fright_Vendor_Data_Service {
 
+    // give a valid variable name
     @Value("${URL.POST.TO.GET.FRIGHT.VENDOR.DATA}")
     String postForFrightVendorData;
 
     public String getFrightVendorData(String purchaseOrderData, String supplierAddressData) {
+
+        // use res temp method
 
         String reqBody = "{\"pickUpLocation\" : \"" + supplierAddressData +"\", \"destinationLocation\" : \"" + purchaseOrderData + "\"}";
 

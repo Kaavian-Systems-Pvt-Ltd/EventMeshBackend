@@ -2,7 +2,6 @@ package com.eventmesh.backend.event_mesh_backend.controller;
 
 import com.eventmesh.backend.event_mesh_backend.service.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import org.apache.coyote.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
@@ -13,16 +12,14 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("api")
 public class Purchase_Order_Controller {
 
-    @Value("${URL.GET.PURCHASE.ORDER.DATA}")
+    @Value("${URL.GET.PURCHASE.ORDER.SDK.DATA}")
     String update_Purchase_Order_Url;
 
-    @Value("${URL.GET.SUPPLIER.ADDRESS.DATA}")
+    @Value("${URL.GET.SUPPLIER.ADDRESS.SDK.DATA}")
     String update_Supplier_Address_Url;
 
-    @Value("${URL.POST.TO.CREATE.INBOUND.DELIVERY.DOCUMENT}")
+    @Value("${URL.POST.TO.CREATE.INBOUND.DELIVERY.SDK.DOCUMENT}")
     String create_inbound_delivery_url;
-
-    ResponseEntity<String> purchaseOrderId;
 
     @Autowired
     Get_Purchase_Order_Id_From_Event_Mesh get_purchase_order_id_from_event_mesh;
@@ -42,54 +39,56 @@ public class Purchase_Order_Controller {
     @PostMapping("recieveData")
     public ResponseEntity<String> getPurchaseOrderIdFromEventMesh (@RequestBody String message) throws JsonProcessingException {
 
-        ResponseEntity<String> purchaseOrderIdFromEventMesh =  ResponseEntity.ok(get_purchase_order_id_from_event_mesh.getPurchaseOrderIdFromEventMesh(message));
+        String purchaseOrderId =  get_purchase_order_id_from_event_mesh.getPurchaseOrderIdFromEventMesh(message);
 
-        purchaseOrderId = purchaseOrderIdFromEventMesh;
+        processPurchaseOrder(purchaseOrderId);
 
-        getPurchaseOrderId();
-
-        return purchaseOrderIdFromEventMesh;
+        return ResponseEntity.ok(purchaseOrderId);
 
     }
 
-    @GetMapping("getPurchaseOrderId")
-    public ResponseEntity<String> getPurchaseOrderId () {
+    public String processPurchaseOrder(String purchaseOrderId) {
 
         if (purchaseOrderId != null) {
 
-            String updatePurchaseOrderUrlDynamically = String.format(update_Purchase_Order_Url, purchaseOrderId.getBody());
+            String updatePurchaseOrderUrlDynamically = String.format(update_Purchase_Order_Url, purchaseOrderId);
 
-            String updateSupplierOrderAddressUrlDynamically = String.format(update_Supplier_Address_Url, purchaseOrderId.getBody());
+            String updateSupplierOrderAddressUrlDynamically = String.format(update_Supplier_Address_Url, purchaseOrderId);
 
             if(!update_Purchase_Order_Url.equals(updatePurchaseOrderUrlDynamically) && !update_Supplier_Address_Url.equals(updateSupplierOrderAddressUrlDynamically) ){
+
+                // update the url method
 
                 String purchaseOrderData = purchase_order_details_service.getPurchaseOrderDetail(updatePurchaseOrderUrlDynamically);
 
                 String supplierAddressData = supplier_address_service.getSupplierAddress(updateSupplierOrderAddressUrlDynamically);
 
+                System.out.println(purchaseOrderData);
+
+                System.out.println(supplierAddressData);
+
                 if(!purchaseOrderData.isEmpty() && !supplierAddressData.isEmpty()) {
 
                     String frightVendorData = fright_vender_data_service.getFrightVendorData(purchaseOrderData, supplierAddressData);
 
-                    System.out.println(frightVendorData);
+                    System.out.println(frightVendorData + "la la boi");
 
                     if (!frightVendorData.isEmpty()){
 
-                        String InboundDelivery = createInboundDeliveryService.CreateInboundDocument();
+                        String InboundDelivery = createInboundDeliveryService.CreateInboundDocument(purchaseOrderId, frightVendorData);
 
                         System.out.println(InboundDelivery);
                     }
-
-                    return ResponseEntity.ok(frightVendorData);
 
                 }
 
             }
 
-            return ResponseEntity.ok("Success got the Id");
+            return "Process Completed Successfully";
 
         }else {
-            return ResponseEntity.ok("error : Id not available");
+
+            return "error : Id not available";
         }
     }
 

@@ -17,10 +17,10 @@ import java.util.Base64;
 @Service
 public class Supplier_Address_Service {
 
-    @Value("${SAP.LOGIN.USERNAME")
+    @Value("${SAP.SMART.LOGIN.USERNAME}")
     String userName;
 
-    @Value("${SAP.LOGIN.PASSWORD}")
+    @Value("${SAP.SMART.LOGIN.PASSWORD}")
     String password;
 
     public String getSupplierAddress(String updateSupplierOrderAddressUrlDynamically) {
@@ -40,7 +40,10 @@ public class Supplier_Address_Service {
                     .header("Authorization", "Basic " + encodeCredentials)
                     .header("Content-Type", "application/json")
                     .header("Accept", "application/json")
-                    .header("x-csrf-token", "Fetch")
+                    .header("X-REQUESTED-WITH", "x")
+                    .header("sap-client", "400")
+                    .header("sap-usercontext", "sap-client%3D400")
+                    .header("Accept-Encoding", "application/json")
                     .GET()
                     .build();
 
@@ -49,6 +52,10 @@ public class Supplier_Address_Service {
             int StatusCode = res.statusCode();
 
             String resData = res.body();
+
+            System.out.println(StatusCode);
+
+            System.out.println(resData);
 
             try {
                 JsonObject jsonObject = jsonParser.parse(resData).getAsJsonObject();
