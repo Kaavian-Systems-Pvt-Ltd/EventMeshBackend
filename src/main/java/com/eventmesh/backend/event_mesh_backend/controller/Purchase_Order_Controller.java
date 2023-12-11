@@ -1,5 +1,6 @@
 package com.eventmesh.backend.event_mesh_backend.controller;
 
+import com.eventmesh.backend.event_mesh_backend.model.MyPurchaseOrder;
 import com.eventmesh.backend.event_mesh_backend.service.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,12 +13,13 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("api")
 public class Purchase_Order_Controller {
 
-    @Value("${URL.GET.PURCHASE.ORDER.SDK.DATA}")
-    String update_Purchase_Order_Url;
+
 
     @Value("${URL.GET.SUPPLIER.ADDRESS.SDK.DATA}")
     String update_Supplier_Address_Url;
 
+    @Value("${URL.GET.PURCHASE.ORDER.SDK.DATA}")
+    String update_Purchase_Order_Url;
     @Value("${URL.POST.TO.CREATE.INBOUND.DELIVERY.SDK.DOCUMENT}")
     String create_inbound_delivery_url;
 
@@ -36,53 +38,62 @@ public class Purchase_Order_Controller {
     @Autowired
     Create_Inbound_Delivery_Service createInboundDeliveryService;
 
-    @PostMapping("recieveData")
+    @PostMapping("receiveData")
     public ResponseEntity<String> getPurchaseOrderIdFromEventMesh (@RequestBody String message) throws JsonProcessingException {
+        String purchaseOrderId;
+        if (message !=null && message.startsWith("{")) {
+            purchaseOrderId =  get_purchase_order_id_from_event_mesh.getPurchaseOrderIdFromEventMesh(message);
+        }else {
+            purchaseOrderId =  message;
+        }
 
-        String purchaseOrderId =  get_purchase_order_id_from_event_mesh.getPurchaseOrderIdFromEventMesh(message);
-
-        processPurchaseOrder(purchaseOrderId);
+        if (purchaseOrderId != null)
+         processPurchaseOrder(purchaseOrderId);
 
         return ResponseEntity.ok(purchaseOrderId);
 
     }
 
+
+
+
     public String processPurchaseOrder(String purchaseOrderId) {
 
         if (purchaseOrderId != null) {
 
-            String updatePurchaseOrderUrlDynamically = String.format(update_Purchase_Order_Url, purchaseOrderId);
-
             String updateSupplierOrderAddressUrlDynamically = String.format(update_Supplier_Address_Url, purchaseOrderId);
 
-            if(!update_Purchase_Order_Url.equals(updatePurchaseOrderUrlDynamically) && !update_Supplier_Address_Url.equals(updateSupplierOrderAddressUrlDynamically) ){
+          //  if(!update_Purchase_Order_Url.equals(updatePurchaseOrderUrlDynamically) && !update_Supplier_Address_Url.equals(updateSupplierOrderAddressUrlDynamically) ){
 
                 // update the url method
 
-                String purchaseOrderData = purchase_order_details_service.getPurchaseOrderDetail(updatePurchaseOrderUrlDynamically);
+                MyPurchaseOrder myPurchaseOrder = purchase_order_details_service.getPurchaseOrder(purchaseOrderId, true);
 
-                String supplierAddressData = supplier_address_service.getSupplierAddress(updateSupplierOrderAddressUrlDynamically);
+            String deliveryAddressCityName = myPurchaseOrder.deliveryAddressCityName;
 
-                System.out.println(purchaseOrderData);
+                String supplierAddressData = myPurchaseOrder.addressCityName;
+
+                System.out.println(deliveryAddressCityName);
 
                 System.out.println(supplierAddressData);
 
-                if(!purchaseOrderData.isEmpty() && !supplierAddressData.isEmpty()) {
+                if(!deliveryAddressCityName.isEmpty() && !supplierAddressData.isEmpty()) {
 
-                    String frightVendorData = fright_vender_data_service.getFrightVendorData(purchaseOrderData, supplierAddressData);
+                    String frightVendorData = fright_vender_data_service.getFrightVendorData(deliveryAddressCityName, supplierAddressData);
 
                     System.out.println(frightVendorData + "la la boi");
 
                     if (!frightVendorData.isEmpty()){
 
-                        String InboundDelivery = createInboundDeliveryService.CreateInboundDocument(purchaseOrderId, frightVendorData);
+                       // String InboundDelivery = createInboundDeliveryService.CreateInboundDocument(purchaseOrderId, frightVendorData);
+                        String InboundDelivery = createInboundDeliveryService.createInboundDeliveryViaDestination(purchaseOrderId, frightVendorData,true);
 
                         System.out.println(InboundDelivery);
                     }
 
                 }
 
-            }
+        //    }
 
             return "Process Completed Successfully";
 
