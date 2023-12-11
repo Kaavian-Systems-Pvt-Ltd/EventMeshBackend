@@ -63,13 +63,9 @@ public class Purchase_Order_Controller {
 
             String updateSupplierOrderAddressUrlDynamically = String.format(update_Supplier_Address_Url, purchaseOrderId);
 
-          //  if(!update_Purchase_Order_Url.equals(updatePurchaseOrderUrlDynamically) && !update_Supplier_Address_Url.equals(updateSupplierOrderAddressUrlDynamically) ){
-
-                // update the url method
-
                 MyPurchaseOrder myPurchaseOrder = purchase_order_details_service.getPurchaseOrder(purchaseOrderId, true);
 
-            String deliveryAddressCityName = myPurchaseOrder.deliveryAddressCityName;
+                String deliveryAddressCityName = myPurchaseOrder.deliveryAddressCityName;
 
                 String supplierAddressData = myPurchaseOrder.addressCityName;
 
@@ -93,7 +89,7 @@ public class Purchase_Order_Controller {
 
                 }
 
-        //    }
+//            }
 
             return "Process Completed Successfully";
 

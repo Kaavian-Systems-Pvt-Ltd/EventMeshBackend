@@ -37,7 +37,7 @@ public class Create_Inbound_Delivery_Service {
     @Value("${SAP.SMART.LOGIN.PASSWORD}")
     String password;
 
-    final HttpDestination delDestination = DestinationAccessor.getDestination("mys4hanadel").asHttp();
+    final HttpDestination delDestination = DestinationAccessor.getDestination("s4Onpremise").asHttp();
 
 
     public String CreateInboundDocument( String purchaseOrderId, String frightVendorData) {
