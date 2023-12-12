@@ -1,94 +1,116 @@
 package com.eventmesh.backend.event_mesh_backend.service;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;;
-import java.io.IOException;
-import java.net.*;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.util.Base64;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.google.common.reflect.TypeToken;
+import com.google.gson.Gson;
+import com.sap.cloud.sdk.cloudplatform.connectivity.DestinationAccessor;
+import com.sap.cloud.sdk.cloudplatform.connectivity.HttpDestination;
+import com.sap.cloud.sdk.datamodel.odata.helper.ModificationResponse;
+import com.sap.cloud.sdk.s4hana.datamodel.odata.namespaces.inbounddeliveryv2.*;
+import com.sap.cloud.sdk.s4hana.datamodel.odata.services.DefaultInboundDeliveryV2Service;
+import org.springframework.stereotype.Service;
+
+import java.lang.reflect.Type;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * By using this Service we are creating the Inbound Document in s4Hana
+ */
 @Service
 public class Create_Inbound_Delivery_Service {
 
-    @Value("${URL.POST.TO.CREATE.INBOUND.DELIVERY.DOCUMENT}")
-    String create_inbound_delivery_url;
+    /**Getting the Destination For inbound delivery Document from ENV and setting in a variable*/
+    final HttpDestination delDestination = DestinationAccessor.getDestination("s4OnPremiseInBoundDelivery").asHttp();
 
-    @Value("${SAP.LOGIN.USERNAME}")
-    String userName;
+    /**
+     * In this Method we Create a Logic which will create Inbound Delivery Document.
+     * We are using V2 of the API here
+     * */
+    public String createInboundDeliveryViaDestination(String purchaseOrderId, String frightVendorData, boolean versionFlag) throws JsonProcessingException {
 
-    @Value("${SAP.LOGIN.PASSWORD}")
-    String password;
+        /**Getting individual frightVendor Data from Json*/
+        Type type = new TypeToken<Map<String, Object>>() {}.getType();
 
-    public String CreateInboundDocument() {
+        Map<String, Object> frightVendor = new Gson().fromJson(frightVendorData, type);
 
-        JsonParser jsonParser = new JsonParser();
+        String frightVendorName = (String) frightVendor.get("freightvendorname");
 
-        String credentials = userName + ":" + password;
+        String returnDocument = "N/A";
 
-        String encodeCredentials = Base64.getEncoder().encodeToString(credentials.getBytes());
+        /**Using V2 of the Inbound Delivery SDK Service*/
+        DefaultInboundDeliveryV2Service service = new DefaultInboundDeliveryV2Service();
 
-        String reqBody = "{"
-                + "\"Supplier\":\"17300001\","
-                + "\"to_DeliveryDocumentItem\": {"
-                + "\"results\": ["
-                + "{"
-                + "\"ActualDeliveryQuantity\":\"1\","
-                + "\"DeliveryQuantityUnit\": \"PC\","
-                + "\"Material\": \"TG0011\","
-                + "\"Plant\": \"1710\","
-                + "\"ReferenceSDDocument\": \"4500000002\","
-                + "\"ReferenceSDDocumentItem\": \"000010\","
-                + "\"to_DocumentFlow\": {"
-                + "\"results\": ["
-                + "{"
-                + "\"QuantityInBaseUnit\": \"1\""
-                + "}"
-                + "]"
-                + "}"
-                + "}"
-                + "]"
-                + "},"
-                + "\"to_DeliveryDocumentPartner\": {"
-                + "\"results\": ["
-                + "{"
-                + "\"to_Address\": {}"
-                + "}"
-                + "]"
-                + "}"
-                + "}";
-        try {
-            HttpClient httpClient = HttpClient.newHttpClient();
+        /**Accessing the Header*/
+        InbDeliveryHeader inbDeliveryHeader = new InbDeliveryHeader();
 
-            HttpRequest req = HttpRequest.newBuilder()
-                    .uri(new URI(create_inbound_delivery_url))
-                    .header("Authorization", "Basic " + encodeCredentials)
-                    .header("Content-Type", "application/json")
-                    .header("Accept", "application/json")
-                    .POST(HttpRequest.BodyPublishers.ofString(reqBody))
-                    .build();
-            HttpResponse<String> res = httpClient.send(req, HttpResponse.BodyHandlers.ofString());
+        /**Adding Supplier Data*/
+        String supplier = "17300001";
 
-            int StatusCode = res.statusCode();
+        inbDeliveryHeader.setSupplier(supplier);
 
-            String reqRes = res.body();
+        /**Adding to_DeliveryHeaderText data*/
+        List<InbDeliveryHeaderText> inbDeliveryHeaderText = new ArrayList<>();
 
-            System.out.println(reqRes + StatusCode);
+        InbDeliveryHeaderText inbDeliveryHeaderTexts = new InbDeliveryHeaderText();
+        inbDeliveryHeaderTexts.setTextElementText(frightVendorName);
+        inbDeliveryHeaderTexts.setTextElementDescription("Transport Information");
+        inbDeliveryHeaderTexts.setDeliveryLongTextIsFormatted(false);
+        inbDeliveryHeaderTexts.setLanguage("EN");
+        inbDeliveryHeaderText.add(inbDeliveryHeaderTexts);
 
-            return reqRes;
-        } catch (URISyntaxException e) {
-            throw new RuntimeException(e);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        } catch (Exception e){
+        inbDeliveryHeader.setDeliveryDocumentText(inbDeliveryHeaderText);
 
-            return  e.getMessage();
+        /**Adding to_DeliveryPartner Data*/
+        List<InbDeliveryPartner> inbDeliveryPartners = new ArrayList<>();
+        InbDeliveryPartner partner = new InbDeliveryPartner();
+        partner.setAddress(new InbDeliveryAddress());
+        inbDeliveryPartners.add(partner);
+        inbDeliveryHeader.setDeliveryDocumentPartner(inbDeliveryPartners);
+
+        /**Adding to_DeliveryDocumentItem Data*/
+        List<InbDeliveryItem> inbDeliveryItems = new ArrayList<>();
+        InbDeliveryItem inbDeliveryItem = new InbDeliveryItem();
+        inbDeliveryItem.setActualDeliveryQuantity(new BigDecimal(1));
+        inbDeliveryItem.setMaterial("TG0011");
+        inbDeliveryItem.setPlant("1710");
+        inbDeliveryItem.setReferenceSDDocument(purchaseOrderId);
+        inbDeliveryItem.setReferenceSDDocumentItem("10");
+        inbDeliveryItem.setActualDeliveryQuantity(new BigDecimal(1));
+        inbDeliveryItem.setDeliveryQuantityUnit("PC");
+
+        /**Adding to_DeliveryDocFlow Data which us inside the to_DeliveryDocumentItem*/
+        List<InbDeliveryDocFlow> inbDeliveryDocFlows = new ArrayList<>();
+        InbDeliveryDocFlow inbDeliveryDocFlow = new InbDeliveryDocFlow();
+        inbDeliveryDocFlow.setQuantityInBaseUnit(new BigDecimal(1));
+        inbDeliveryDocFlows.add(inbDeliveryDocFlow);
+
+        /**Adding the to_DocumentFlow data to to_DeliveryDocumentItem*/
+        inbDeliveryItem.setDocumentFlow(inbDeliveryDocFlows);
+        inbDeliveryItems.add(inbDeliveryItem);
+
+        /**then we are adding the to_DeliveryDocumentItem to header*/
+        inbDeliveryHeader.setDeliveryDocumentItem(inbDeliveryItems);
+
+        /**Setting the Header*/
+        InbDeliveryHeaderCreateFluentHelper inbDeliveryHeader1 = service.createInbDeliveryHeader(inbDeliveryHeader).withHeader("X-REQUESTED-WITH","x").withHeader("sap-client","400").withoutCsrfToken();
+
+        /**Executing the Request*/
+        ModificationResponse<InbDeliveryHeader> inbDeliveryHeaderModificationResponse = inbDeliveryHeader1.executeRequest(delDestination);
+
+        if (inbDeliveryHeaderModificationResponse !=null
+                && inbDeliveryHeaderModificationResponse.getResponseStatusCode() >0
+                && inbDeliveryHeaderModificationResponse.getRequestEntity() != null ) {
+
+            /**Logging the Data for Debugging*/
+            System.out.println( inbDeliveryHeaderModificationResponse.getRequestEntity().getDeliveryDocument());
+
+            returnDocument = inbDeliveryHeaderModificationResponse.getRequestEntity().getDeliveryDocument();
 
         }
+
+        return returnDocument;
     }
 }
