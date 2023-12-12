@@ -10,3 +10,5 @@ applications:
       TARGET_RUNTIME: tomcat
       JBP_CONFIG_OPEN_JDK_JRE: '{ jre: { version: 17.+ } }'
       JAVA_OPTS: "-agentlib:jdwp=transport=dt_socket,address=8686,server=y,suspend=n"
+      services:
+        - my-xsuaa
