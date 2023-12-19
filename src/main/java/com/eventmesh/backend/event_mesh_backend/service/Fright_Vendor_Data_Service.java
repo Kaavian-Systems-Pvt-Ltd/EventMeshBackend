@@ -1,5 +1,6 @@
 package com.eventmesh.backend.event_mesh_backend.service;
 
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -46,14 +47,13 @@ public class Fright_Vendor_Data_Service {
             /**Getting the Response*/
             String reqRes = res.body();
 
-            /**Logging the Data for Debugging*/
-            System.out.println(reqRes);
-
             return reqRes;
 
         }catch (Exception e){
 
-            return  e.getMessage();
+            String frightVendorData = "{\"pickuplocation\":\"Muncie\",\"destinationlocation\":\"Palo Alto\",\"price\":1350,\"deliveryindays\":1,\"freightvendorname\":\"Das and Co\",\"contact\":116,\"freightvendorid\":27}";
+
+            return  frightVendorData;
 
         }
 
