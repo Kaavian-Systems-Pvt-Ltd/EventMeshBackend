@@ -60,6 +60,8 @@ public class Purchase_Order_Controller {
         /**Here we are checking whether the purchase Order variable has value or not*/
         if (purchaseOrderId != null) {
 
+            System.out.println("Purchase Order ID : " + purchaseOrderId);
+
                 /**here we are Calling a Method which will use the Purchase Order ID and get us entier Data of the ID
                  * And get us Supplier Address Data also
                  */
@@ -72,7 +74,7 @@ public class Purchase_Order_Controller {
                 String supplierAddressData = myPurchaseOrder.addressCityName;
 
                 /**Logging the Data for Debugging*/
-                System.out.println(deliveryAddressCityName + supplierAddressData);
+                System.out.println("Looking For Fright Vendor At : "+ "Delivery Address :" + deliveryAddressCityName + "Supplier Address : "+ supplierAddressData);
 
                 /** checking if the both deliveryAddressCityName and supplierAddressData has Variable*/
                 if(!deliveryAddressCityName.isEmpty() && !supplierAddressData.isEmpty()) {
@@ -86,7 +88,7 @@ public class Purchase_Order_Controller {
                     String frightVendorData = fright_vender_data_service.getFrightVendorData(deliveryAddressCityName, supplierAddressData);
 
                     /**Logging the Data for Debugging*/
-                    System.out.println("frightVendorData  " + frightVendorData);
+                    System.out.println("fright Vendor Details  " + frightVendorData);
 
                     /**Checking if the frightVendorData Variable has the Data or not*/
                     if (!frightVendorData.isEmpty()){
@@ -99,18 +101,17 @@ public class Purchase_Order_Controller {
 
                         /**Logging the Data for Debugging*/
                         System.out.println(InboundDelivery);
+
                     }
 
                 }
-
-//            }
-
-            return "Process Completed Successfully";
 
         }else {
 
             return "error : Id not available";
         }
+
+        return "Process Completed Successfully";
     }
 
 }

@@ -100,17 +100,13 @@ public class Create_Inbound_Delivery_Service {
         /**Executing the Request*/
         ModificationResponse<InbDeliveryHeader> inbDeliveryHeaderModificationResponse = inbDeliveryHeader1.executeRequest(delDestination);
 
-        if (inbDeliveryHeaderModificationResponse !=null
-                && inbDeliveryHeaderModificationResponse.getResponseStatusCode() >0
-                && inbDeliveryHeaderModificationResponse.getRequestEntity() != null ) {
+        if(inbDeliveryHeaderModificationResponse.getResponseStatusCode() > 0){
 
-            /**Logging the Data for Debugging*/
-            System.out.println( inbDeliveryHeaderModificationResponse.getRequestEntity().getDeliveryDocument());
-
-            returnDocument = inbDeliveryHeaderModificationResponse.getRequestEntity().getDeliveryDocument();
+            returnDocument = "InBound Delivery Document Created Successfully";
 
         }
 
         return returnDocument;
     }
+
 }
