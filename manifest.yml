@@ -10,5 +10,6 @@ applications:
       TARGET_RUNTIME: tomcat
       JBP_CONFIG_OPEN_JDK_JRE: '{ jre: { version: 17.+ } }'
       JAVA_OPTS: "-agentlib:jdwp=transport=dt_socket,address=8686,server=y,suspend=n"
+      destinations: '[{"name":"s4OnPremiseInBoundDelivery","url":"http://3.86.39.117:50000/sap/opu/odata/sap/API_INBOUND_DELIVERY_SRV\;v=0002/A_InbDeliveryHeader","username":"SMART05","password":"Smartsoft1017"},{"name":"s4OnPremisePurchaseOrder","url":"http://3.86.39.117:50000/sap/opu/odata/sap/API_PURCHASEORDER_PROCESS_SRV/A_PurchaseOrder","username":"SMART05","password":"Smartsoft1017"}]'
       services:
         - my-xsuaa

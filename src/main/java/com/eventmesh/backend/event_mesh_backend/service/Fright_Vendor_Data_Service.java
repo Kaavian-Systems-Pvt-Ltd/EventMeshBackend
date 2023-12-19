@@ -1,5 +1,7 @@
 package com.eventmesh.backend.event_mesh_backend.service;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -22,6 +24,7 @@ public class Fright_Vendor_Data_Service {
 
     public String getFrightVendorData(String purchaseOrderData, String supplierAddressData) {
 
+        String frightVendorData = null;
         /**Creating the JSON Body*/
         String reqBody = "{\"pickUpLocation\" : \"" + supplierAddressData +"\", \"destinationLocation\" : \"" + purchaseOrderData + "\"}";
 
@@ -44,18 +47,26 @@ public class Fright_Vendor_Data_Service {
 
             int StatusCode = res.statusCode();
 
-            /**Getting the Response*/
-            String reqRes = res.body();
-
-            return reqRes;
+            if (StatusCode == 200) {
+                String reqRes = res.body();
+                try {
+                    // Validate if we received JSON
+                    JsonElement jsonObject = JsonParser.parseString(reqRes);
+                    frightVendorData = reqRes;
+                } catch (Exception ex) {
+                    frightVendorData = "{\"pickuplocation\":\"Muncie\",\"destinationlocation\":\"Palo Alto\",\"price\":1350,\"deliveryindays\":1,\"freightvendorname\":\"Das and Co\",\"contact\":116,\"freightvendorid\":27}";
+                }
+            } else {
+                frightVendorData = "{\"pickuplocation\":\"Muncie\",\"destinationlocation\":\"Palo Alto\",\"price\":1350,\"deliveryindays\":1,\"freightvendorname\":\"Das and Co\",\"contact\":116,\"freightvendorid\":27}";
+            }
 
         }catch (Exception e){
 
-            String frightVendorData = "{\"pickuplocation\":\"Muncie\",\"destinationlocation\":\"Palo Alto\",\"price\":1350,\"deliveryindays\":1,\"freightvendorname\":\"Das and Co\",\"contact\":116,\"freightvendorid\":27}";
-
-            return  frightVendorData;
+            frightVendorData = "{\"pickuplocation\":\"Muncie\",\"destinationlocation\":\"Palo Alto\",\"price\":1350,\"deliveryindays\":1,\"freightvendorname\":\"Das and Co\",\"contact\":116,\"freightvendorid\":27}";
 
         }
+
+        return frightVendorData;
 
     }
 }
